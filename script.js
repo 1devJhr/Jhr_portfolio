@@ -36,6 +36,8 @@ var SITE = {
   discord: 'jhrzin',
   xHandle: '@Jhrz1n',
   xUrl: 'https://x.com/Jhrz1n',
+  behanceUrl: 'https://www.behance.net/jhrzin',   /* TROQUE pelo link do seu Behance (deixe '' para esconder o botão) */
+  youtubeUrl: 'https://www.youtube.com/@jhrzin',   /* TROQUE pelo link do seu canal (deixe '' para esconder o botão) */
   tools: ['Premiere Pro', 'After Effects', 'Photoshop'],
   /* cada cliente: [nome, inscritos, link do canal] */
   clients: [
@@ -116,6 +118,25 @@ function mini(color, edges, shadow) {
   return '<svg viewBox="0 0 64 64" aria-hidden="true" focusable="false">' +
     (shadow ? '<path d="' + d + '" transform="translate(3 3)" style="fill:var(--ink)"/>' : '') +
     '<path d="' + d + '" style="fill:var(' + color + ');stroke:var(--ink);stroke-width:3.5;stroke-linejoin:round"/></svg>';
+}
+/* ícones de redes no estilo do site: peça de quebra-cabeça colorida com o símbolo da rede */
+function socIcon(fill, glyph) {
+  var d = piecePath(8, 18, 48, 34, [1, 0, 0, 0], .5);
+  return '<svg class="soc-ico" viewBox="0 3 64 56" aria-hidden="true" focusable="false">' +
+    '<path d="' + d + '" transform="translate(2.5 2.5)" style="fill:var(--ink)"/>' +
+    '<path d="' + d + '" style="fill:' + fill + ';stroke:var(--ink);stroke-width:3.5;stroke-linejoin:round"/>' + glyph + '</svg>';
+}
+function ytIcon() {
+  return socIcon('var(--red)', '<path d="M26.5 27.5v15l13-7.5z" style="fill:var(--cream);stroke:var(--ink);stroke-width:2.6;stroke-linejoin:round"/>');
+}
+function behanceIcon() {
+  return socIcon('var(--blue)', '<text x="32" y="43" text-anchor="middle" style="font:400 17px var(--f-display);fill:var(--on-strong)">Bē</text>');
+}
+function xIcon() {
+  return socIcon('var(--inv)', '<path d="M26.5 27l11 16M37.5 27l-11 16" style="fill:none;stroke:var(--cream);stroke-width:3.4;stroke-linecap:round"/>');
+}
+function socBtn(url, label, icon) {
+  return url ? '<a class="btn soc" href="' + url + '" target="_blank" rel="noopener" aria-label="' + label + '">' + icon + '<span>' + label + '</span></a>' : '';
 }
 function avatar() {
   return '<svg viewBox="0 0 64 64" width="48" height="48" aria-hidden="true" focusable="false">' +
@@ -247,7 +268,8 @@ function motionPanel() {
         '<h1>' + SITE.name + '</h1>' +
         '<div class="chips"><span class="chip">' + SITE.role + '</span><span class="chip">Motion</span><span class="chip">' + T('Animação', 'Animation') + '</span></div>' +
         '<p class="lead">' + T('Motion Designer e Editor de Vídeo com mais de 4 anos de experiência, unindo cortes precisos e animações dinâmicas. Transformo ideias em histórias visuais cativantes. Aberto a novos desafios.','Motion Designer & Video Editor with 4+ years of experience blending sharp cuts with dynamic animation. Turning ideas into engaging visual stories. Open to new creative challenges.') + '</p>' +
-        '<div class="actions"><button class="btn red" type="button" data-scroll="trabalhos-motion">' + T('Ver trabalhos', 'View work') + '</button><button class="btn alt" type="button" data-scroll="contato">' + T('Falar comigo', 'Talk to me') + '</button></div>' +
+        '<div class="actions"><button class="btn red" type="button" data-scroll="trabalhos-motion">' + T('Ver trabalhos', 'View work') + '</button><button class="btn alt" type="button" data-scroll="contato">' + T('Falar comigo', 'Talk to me') + '</button>' +
+          socBtn(SITE.youtubeUrl, 'YouTube', ytIcon()) + socBtn(SITE.behanceUrl, 'Behance', behanceIcon()) + socBtn(SITE.xUrl, 'X', xIcon()) + '</div>' +
       '</div>' +
       '<div class="hero-art">' + heroPiece() +
         '<span class="float f1">' + mini('--orange', [1, 1, -1, -1], true) + '</span>' +
