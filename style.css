@@ -22,6 +22,17 @@ img{max-width:100%}
   --on-strong:#FAF3E0;  /* texto sobre vermelho e azul */
   color-scheme:light;
 }
+/* cursor personalizado: seta gordinha vermelha com contorno escuro; sobre links e botões fica laranja e ganha uma peça de quebra-cabeça
+   (cursor.png / cursor@2x.png e cursor-hover.png / cursor-hover@2x.png, na mesma pasta do site) */
+:root{
+  --cursor:image-set(url("cursor.png") 1x,url("cursor@2x.png") 2x) 5 5,auto;
+  --cursor-hover:image-set(url("cursor-hover.png") 1x,url("cursor-hover@2x.png") 2x) 5 5,pointer}
+/* no modo escuro o cursor troca de cor (cores do tema escuro, contorno creme) */
+:root[data-theme="dark"]{
+  --cursor:image-set(url("cursor-dark.png") 1x,url("cursor-dark@2x.png") 2x) 5 5,auto;
+  --cursor-hover:image-set(url("cursor-hover-dark.png") 1x,url("cursor-hover-dark@2x.png") 2x) 5 5,pointer}
+html,body{cursor:var(--cursor)}
+html body :is(a,button,[role=tab],[data-scroll],[data-more],[data-pl],[data-lang],.btn,.pc,.theme-btn,.lang-sw button,summary,label,select){cursor:var(--cursor-hover)}
 *{box-sizing:border-box}
 body{background:var(--paper);color:var(--ink);font:400 16px/1.6 var(--f-body);-webkit-font-smoothing:antialiased}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--paper)}
