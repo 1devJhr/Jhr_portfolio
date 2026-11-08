@@ -62,7 +62,7 @@ var WORKS = {
   ],
   animacao: [
     ['Luffy Gear 5 Animation', 'MMV','https://youtu.be/nSO8bTaX0Cc?si=8MHsMABCH8aeGCUC'], ['Gon Animation', 'MMV','https://youtu.be/TYQjpFlaOR0?si=JHVxpgqrMW3A80pN'], ['Kaiser Goal Animation', 'MMV','https://youtu.be/mhv04zLlXcU?si=e9r0vVhAGyyBnR6j'],
-    ['Isagi Goal Animation', 'MMV','https://youtu.be/hSo61BECurQ?si=FGjIjsjSmELFFTlj'], ['Kaleb Animation', 'MMV','https://youtu.be/VbPfMJ6-_ow?si=wo7HCytmuvmUsyg5'], ['Yhwach Animation', 'MMV','https://youtu.be/TUjBdgY7KX0?si=pGUqvcJ4XHDXRc_x']
+    ['Isagi Goal Animation', 'MMV','https://youtu.be/hSo61BECurQ?si=FGjIjsjSmELFFTlj'], ['Kaleb Animation', 'MMV','https://youtu.be/VbPfMJ6-_ow?si=wo7HCytmuvmUsyg5'], ['Yhwach Animation', 'MMV','https://youtu.be/TUjBdgY7KX0?si=pGUqvcJ4XHDXRc_x'], ['Homelander Animation', 'MMV','https://youtu.be/f3-4zs9Nuio'], ['Enrico Pucci Animation', 'MMV','https://youtu.be/VjruphwcHms'], ['Pxg Animation', 'MMV','https://youtu.be/Jli7qZlclto'], ['Record of Ragnarok Animation', 'MMV','https://youtu.be/Bjbc-QJ3qzI'], ['Dabura Animation', 'MMV','https://youtu.be/lt9KQvvbwv0'], ['Kaoru Hana Animation', 'MMV','https://youtu.be/SJhNZNIdiWM']
   ]
 };
 /* cada serviço: [número, [título PT, título EN], [descrição PT, descrição EN], aba] */
