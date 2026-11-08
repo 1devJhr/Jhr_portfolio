@@ -1,3 +1,11 @@
+/* ===== Tema (claro / escuro) ===== */
+function initialTheme() {
+  try { var s = localStorage.getItem('theme'); if (s === 'dark' || s === 'light') return s; } catch (e) {}
+  return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+function curTheme() { return document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light'; }
+document.documentElement.setAttribute('data-theme', initialTheme());
+
 /* ===== Idioma (PT / EN) ===== */
 function initialLang() {
   try { var s = localStorage.getItem('lang'); if (s === 'pt' || s === 'en') return s; } catch (e) {}
@@ -19,6 +27,8 @@ function n2(n) { return (n < 10 ? '0' : '') + n; }
 function pieces(n) { return n2(n) + ' ' + (n === 1 ? T('peça', 'piece') : T('peças', 'pieces')); }
 
 /* ===== Conteúdo editável ===== */
+/* busca de canais no YouTube (já filtrada para mostrar só canais) */
+function chSearch(q) { return 'https://www.youtube.com/results?search_query=' + encodeURIComponent(q) + '&sp=EgIQAg%253D%253D'; }
 var SITE = {
   name: 'Jhr',
   role: 'Video Editor',
@@ -27,9 +37,17 @@ var SITE = {
   xHandle: '@Jhrz1n',
   xUrl: 'https://x.com/Jhrz1n',
   tools: ['Premiere Pro', 'After Effects', 'Photoshop'],
+  /* cada cliente: [nome, inscritos, link do canal] */
   clients: [
-    ['Anirap', '2M'], ['M4rkim', '1.28M'], ['Isis Vasconcellos', '1.43M'], ['Henrique Mendonça', '592K'],
-    ['Kaito', '417K'], ['ÉoDan', '358K'], ['Novatroop', '312K'], ['Ishida', '232K'], ['Slow GM', '102K']
+    ['Anirap', '2M', 'https://www.youtube.com/channel/UCXBPFEVfOPPBop4-ICdA0iA'],
+    ['M4rkim', '1.28M', 'https://www.youtube.com/@M4rkim'],
+    ['Isis Vasconcellos', '1.43M', 'https://www.youtube.com/@isisvasconcelllos'],
+    ['Henrique Mendonça', '592K', 'https://www.youtube.com/@henriquemendonca'],
+    ['Kaito', '417K', 'https://www.youtube.com/@KaitoOFC'],
+    ['ÉoDan', '358K', 'https://www.youtube.com/@EoDanOficial'],
+    ['Novatroop', '312K', 'https://www.youtube.com/channel/UCrSi0uwl1SPyd6-jrLkIVhg'],
+    ['Ishida', '232K', 'https://www.youtube.com/@IshidaOficial'],
+    ['Slow GM', '102K', 'https://www.youtube.com/c/slowgm']
   ]
 };
 /* cada item: [nome, categoria, link do vídeo, miniatura opcional] */
@@ -51,7 +69,7 @@ var SERVICES = [
     ['Cortes, ritmo, som e acabamento para vídeos longos e curtos.', 'Cuts, pacing, sound and polish for long and short videos.'], 'motion'],
   ['02', ['Motion graphics', 'Motion graphics'],
     ['Títulos, transições e animações que dão identidade ao vídeo.', 'Titles, transitions and animations that give your video an identity.'], 'motion'],
-  ['03', ['Animação de Mangá', 'Manga Animation'],
+  ['03', ['Animação 2d', '2D Animation'],
     ['Recorte de personagem, rig e animação.', 'Character cutouts, rigging and animation.'], 'animacao']
 ];
 var TABS = [
@@ -61,8 +79,8 @@ var TABS = [
 
 /* ===== Peças de quebra-cabeça ===== */
 var PAL = [
-  { bg: '--red', fg: '--cream' }, { bg: '--orange', fg: '--ink' }, { bg: '--blue', fg: '--cream' },
-  { bg: '--salmon', fg: '--ink' }, { bg: '--glass', fg: '--ink' }
+  { bg: '--red', fg: '--on-strong' }, { bg: '--orange', fg: '--dark' }, { bg: '--blue', fg: '--on-strong' },
+  { bg: '--salmon', fg: '--dark' }, { bg: '--glass', fg: '--dark' }
 ];
 var uid = 0;
 /* quantos cartões aparecem de início (e quantos entram a cada clique em "Ver mais") */
@@ -202,10 +220,13 @@ function strip(items, light) {
     items.forEach(function (it, i) { list.push({ it: it, i: i, dup: r > 0 }); });
   }
   var group = '<div class="strip-group">' + list.map(function (o) {
-    return '<span class="strip-item"' + (o.dup ? ' aria-hidden="true"' : '') + '>' + o.it.label + (o.it.sub ? '<small>' + o.it.sub + '</small>' : '') + mini(colors[o.i % 4], [1, 1, -1, -1], false) + '</span>';
+    var tag = o.it.url ? 'a' : 'span';
+    var attrs = o.it.url ? ' href="' + esc(o.it.url) + '" target="_blank" rel="noopener" aria-label="' + esc(T('Abrir canal: ', 'Open channel: ') + o.it.label) + '"' : '';
+    var hid = o.dup ? ' aria-hidden="true"' + (o.it.url ? ' tabindex="-1"' : '') : '';
+    return '<' + tag + ' class="strip-item"' + attrs + hid + '>' + o.it.label + (o.it.sub ? '<small>' + o.it.sub + '</small>' : '') + mini(colors[o.i % 4], [1, 1, -1, -1], false) + '</' + tag + '>';
   }).join('') + '</div>';
   var secs = Math.round(list.length * 8);
-  return '<div class="strip' + (light ? ' light' : '') + '"><div class="strip-track" style="animation-duration:' + secs + 's">' + group + group.replace('<div class="strip-group">', '<div class="strip-group" aria-hidden="true">') + '</div></div>';
+  return '<div class="strip' + (light ? ' light' : '') + '"><div class="strip-track" style="animation-duration:' + secs + 's">' + group + group.replace('<div class="strip-group">', '<div class="strip-group" aria-hidden="true">').replace(/<a class="strip-item"/g, '<a tabindex="-1" class="strip-item"') + '</div></div>';
 }
 function secHead(eyebrow, title, note) {
   return '<div class="sec-head"><div><span class="eyebrow">' + eyebrow + '</span><h2>' + title + '</h2></div>' +
@@ -214,7 +235,7 @@ function secHead(eyebrow, title, note) {
 
 function motionPanel() {
   var tools = SITE.tools.map(function (t) { return { label: t }; });
-  var clients = SITE.clients.map(function (c) { return { label: tr(c[0]), sub: tr(c[1]) }; });
+  var clients = SITE.clients.map(function (c) { return { label: tr(c[0]), sub: tr(c[1]), url: c[2] }; });
   var services = SERVICES.map(function (s) {
     return '<div class="svc"><div class="n"><small>' + T('peça', 'piece') + '</small>' + s[0] + '</div><h3>' + T(s[1][0], s[1][1]) + '</h3><p>' + T(s[2][0], s[2][1]) + '</p>' +
       '<a class="btn small alt" href="#' + s[3] + '">' + T('Ver trabalhos', 'View work') + '</a></div>';
@@ -271,6 +292,16 @@ function footer() {
   '</div>';
 }
 
+/* ===== Botão de tema ===== */
+function themeBtnUpdate(tb) {
+  var dark = curTheme() === 'dark';
+  tb.setAttribute('aria-label', dark ? T('Mudar para o modo claro', 'Switch to light mode') : T('Mudar para o modo escuro', 'Switch to dark mode'));
+  tb.setAttribute('aria-pressed', dark ? 'true' : 'false');
+  tb.innerHTML = dark
+    ? '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.6M12 18.9v2.6M2.5 12h2.6M18.9 12h2.6M5.3 5.3l1.9 1.9M16.8 16.8l1.9 1.9M18.7 5.3l-1.9 1.9M7.2 16.8l-1.9 1.9"/></svg>'
+    : '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></svg>';
+}
+
 /* ===== Montagem da página ===== */
 function render() {
   document.documentElement.lang = lang === 'en' ? 'en' : 'pt-BR';
@@ -285,7 +316,7 @@ function render() {
   document.getElementById('tabs').setAttribute('aria-label', T('Seções do portfólio', 'Portfolio sections'));
   document.getElementById('tabs').innerHTML = TABS.map(function (t) {
     return '<a role="tab" id="tab-' + t.id + '" href="#' + t.id + '" aria-controls="p-' + t.id + '">' + T(t.label[0], t.label[1]) + '</a>';
-  }).join('');
+  }).join('') + '<i class="tab-ind" aria-hidden="true"></i>';
   var quote = document.getElementById('quoteBtn') || document.querySelector('.bar > .btn');
   var sw = document.getElementById('lang');
   if (!sw) { /* index.html antigo: cria o seletor de idioma sozinho */
@@ -295,6 +326,13 @@ function render() {
   }
   sw.innerHTML = langSwitch();
   sw.setAttribute('aria-label', 'Idioma / Language');
+  var tb = document.getElementById('themeBtn');
+  if (!tb) {
+    tb = document.createElement('button');
+    tb.id = 'themeBtn'; tb.type = 'button'; tb.className = 'theme-btn'; tb.setAttribute('data-theme-toggle', '');
+    quote.parentNode.insertBefore(tb, quote);
+  }
+  themeBtnUpdate(tb);
   quote.textContent = T('Orçamento', 'Get a quote');
   document.getElementById('p-motion').innerHTML = motionPanel();
   document.getElementById('p-animacao').innerHTML = subPanel('animacao', T('aba', 'tab'), T('Animação', 'Animation'),
@@ -347,7 +385,7 @@ function plShow(focus) {
       '<span class="pl-piece" aria-hidden="true">' + mini(colors[PL.i % 4], [1, 1, -1, -1], true) + '</span>' +
       '<div class="pl-title"><h3>' + esc(title) + '</h3><span class="tag">' + esc(tag) + '</span></div>' +
       '<button type="button" class="pl-x" data-pl="close" aria-label="' + T('Fechar', 'Close') + '">' +
-        '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" style="fill:none;stroke:var(--cream);stroke-width:3.5;stroke-linecap:round"/></svg></button>' +
+        '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" style="fill:none;stroke:var(--on-strong);stroke-width:3.5;stroke-linecap:round"/></svg></button>' +
     '</div>' +
     '<div class="pl-body"><div class="pl-stage' + (vert ? ' v' : '') + '">' + embedHtml(emb, title) + '</div>' +
       (type !== 'fl' ? '<p class="pl-note">' + (location.protocol === 'file:'
@@ -377,7 +415,142 @@ function openPlayer(a) {
   if (!d.open) d.showModal();
 }
 
+/* ===== Fundo de quebra-cabeças + troca de tema =====
+   O fundo é uma imagem leve que se repete: peças com a cor do tema e o contorno na cor contrária.
+   Na troca, fileiras com as peças do outro tema sobem por cima das do tema atual (animação na GPU),
+   e as cores da página mudam junto, fileira por fileira, acompanhando a onda. */
+var PZ_COL = { light: { paper: '#F0E5C9', ink: '#17110F', op: .13 }, dark: { paper: '#1B1613', ink: '#EDE0C2', op: .12 } };   /* op = opacidade do contorno */
+var PZ_S = 64;                 /* tamanho de cada peça, em px */
+var PZ_LINE = 2.6;             /* espessura do contorno */
+/* encaixe redondinho: pescoço macio + cabeça em forma de cúpula (curvas cúbicas, relativas ao lado da peça) */
+var KNOB = [[.44,0,.43,.06,.42,.10],[.37,.12,.35,.16,.35,.21],[.35,.39,.65,.39,.65,.21],[.65,.16,.63,.12,.58,.10],[.57,.06,.56,0,.62,0]];
+var PZ_DIR = { v: [[1, -1], [-1, 1]], h: [[-1, 1], [1, -1]] };
+for (var pzi = 0; pzi < 2; pzi++) for (var pzj = 0; pzj < 2; pzj++) {
+  PZ_DIR.v[pzi][pzj] = Math.random() < .5 ? 1 : -1;
+  PZ_DIR.h[pzi][pzj] = Math.random() < .5 ? 1 : -1;
+}
+var PZ_TILE = {};
+
+/* uma imagem 2x2 peças que se repete sem emendas (as peças que cruzam a borda são desenhadas também do outro lado) */
+function pzTile(theme) {
+  if (PZ_TILE[theme]) return PZ_TILE[theme];
+  var s = PZ_S, T = s * 2, col = PZ_COL[theme], d = '';
+  function f(n) { return Math.round(n * 10) / 10; }
+  function seg(x0, y0, x1, y1, k) {
+    var dx = (x1 - x0) / s, dy = (y1 - y0) / s;
+    function P(u, v) { return f(x0 + dx * u * s + dy * k * v * s) + ' ' + f(y0 + dy * u * s - dx * k * v * s); }
+    var o = 'M' + P(0, 0) + 'L' + P(.38, 0);
+    for (var j = 0; j < KNOB.length; j++) { var g = KNOB[j]; o += 'C' + P(g[0], g[1]) + ' ' + P(g[2], g[3]) + ' ' + P(g[4], g[5]); }
+    return o + 'L' + P(1, 0);
+  }
+  for (var ox = -T; ox <= T; ox += T) for (var oy = -T; oy <= T; oy += T)
+    for (var i = 0; i < 2; i++) for (var j = 0; j < 2; j++) {
+      var x = s / 2 + i * s, y = s / 2 + j * s;
+      d += seg(x + ox, y + oy, x + ox, y + s + oy, PZ_DIR.v[i][j]);   /* linha vertical */
+      d += seg(x + ox, y + oy, x + s + ox, y + oy, PZ_DIR.h[j][i]);   /* linha horizontal */
+    }
+  var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + T + '" height="' + T + '" viewBox="0 0 ' + T + ' ' + T + '">' +
+    '<rect width="100%" height="100%" fill="' + col.paper + '"/>' +
+    '<path d="' + d + '" fill="none" stroke="' + col.ink + '" stroke-opacity="' + col.op + '" stroke-width="' + PZ_LINE + '" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  return (PZ_TILE[theme] = 'url("data:image/svg+xml,' + encodeURIComponent(svg) + '")');
+}
+
+var pzBg = document.createElement('div');
+pzBg.id = 'pzBg';
+pzBg.setAttribute('aria-hidden', 'true');
+document.body.insertBefore(pzBg, document.body.firstChild);
+function pzSetBase(theme) { pzBg.style.backgroundImage = pzTile(theme); pzBg.style.backgroundSize = (PZ_S * 2) + 'px ' + (PZ_S * 2) + 'px'; }
+pzSetBase(curTheme());
+
+var PZ_BUSY = false;
+function swapTheme(apply) {
+  var calm = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var nt = curTheme() === 'dark' ? 'light' : 'dark';
+  if (PZ_BUSY) return;
+  if (calm) { apply(); pzSetBase(nt); return; }
+  PZ_BUSY = true;
+
+  var s = PZ_S, H = window.innerHeight, rows = Math.ceil(H / s) + 1, K = Math.round(s * .4);
+  var D = 1100, DUR = 440, FLIP = .45;                     /* tempo total, tempo de cada fileira, ponto em que a cor da página vira */
+  function rowDelay(r) { return rows > 1 ? (rows - 1 - r) / (rows - 1) * (D - DUR) : 0; }   /* fileira de baixo começa primeiro */
+
+  /* 1) cada elemento da página vira quando a onda passa por ele */
+  var els = document.body.querySelectorAll('*'), marked = [], rects = [], q;
+  if (els.length <= 3000) {
+    for (q = 0; q < els.length; q++) rects.push(els[q].getBoundingClientRect());
+    for (q = 0; q < els.length; q++) {
+      var rc = rects[q];
+      var y = Math.max(0, Math.min(H - 1, rc.top + Math.min(rc.height, H) / 2));
+      var r = Math.max(0, Math.min(rows - 1, Math.floor(y / s)));
+      els[q].style.setProperty('--pzd', Math.round(rowDelay(r) + DUR * FLIP) + 'ms');
+      marked.push(els[q]);
+    }
+  }
+  var root = document.documentElement;
+  root.classList.add('pz-flip');
+
+  /* 2) fileiras do tema novo, por cima do fundo atual */
+  var wave = document.createElement('div');
+  wave.id = 'pzWave';
+  wave.setAttribute('aria-hidden', 'true');
+  var img = pzTile(nt), size = (s * 2) + 'px ' + (s * 2) + 'px', anims = [];
+  for (var rr = 0; rr < rows; rr++) {
+    var top = rr * s - K, el = document.createElement('i');
+    el.style.cssText = 'top:' + top + 'px;height:' + (s + 2 * K) + 'px;z-index:' + rr + ';background-image:' + img +
+      ';background-size:' + size + ';background-position:0 ' + (-top) + 'px';
+    wave.appendChild(el);
+    anims.push(el);
+  }
+  document.body.insertBefore(wave, pzBg.nextSibling);
+  var running = anims.map(function (el, rr) {
+    return el.animate(
+      [{ transform: 'translateY(' + Math.round(s * 1.1) + 'px)', opacity: 0 },
+       { opacity: 1, offset: .5 },
+       { transform: 'translateY(0)', opacity: 1 }],
+      { duration: DUR, delay: rowDelay(rr), easing: 'cubic-bezier(.2,.75,.25,1)', fill: 'backwards' }).finished;
+  });
+
+  /* 3) troca o tema de verdade (as cores acompanham a onda pelos atrasos acima) */
+  apply();
+
+  var cleaned = false;
+  function finish() {
+    if (cleaned) return; cleaned = true;
+    pzSetBase(nt);                       /* o fundo fixo passa a ter o desenho novo, idêntico ao das fileiras */
+    wave.remove();
+    setTimeout(function () {             /* espera as últimas cores terminarem de mudar */
+      root.classList.remove('pz-flip');
+      marked.forEach(function (el) { el.style.removeProperty('--pzd'); });
+      PZ_BUSY = false;
+    }, 350);
+  }
+  Promise.all(running).then(finish, finish);
+}
+
 var firstRoute = true;
+function tabInd(animate) {
+  var box = document.getElementById('tabs'), ind = box && box.querySelector('.tab-ind');
+  var cur = box && box.querySelector('a[aria-selected="true"]');
+  if (!ind || !cur) return;
+  var L = cur.offsetLeft, R = box.offsetWidth - L - cur.offsetWidth;
+  var oldL = parseFloat(ind.style.left) || 0;
+  var calm = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!animate || calm) {
+    ind.style.transition = 'none';
+    ind.style.left = L + 'px'; ind.style.right = R + 'px';
+    void ind.offsetWidth;
+    ind.style.transition = '';
+    return;
+  }
+  /* a borda da frente corre rápido e passa um pouquinho do ponto; a de trás vem devagar: a gota estica e depois encolhe */
+  var lead = 'left .34s cubic-bezier(.3,1.3,.5,1)', fast = 'right .34s cubic-bezier(.3,1.3,.5,1)';
+  var lag = '.55s cubic-bezier(.25,.9,.3,1) .05s';
+  ind.style.transition = L > oldL ? 'left ' + lag + ',' + fast : 'right ' + lag + ',' + lead;
+  ind.style.left = L + 'px'; ind.style.right = R + 'px';
+  if (ind.animate) ind.animate(
+    [{ transform: 'scale(1,1)' }, { transform: 'scale(1,.8)', offset: .35 }, { transform: 'scale(1,1.04)', offset: .75 }, { transform: 'scale(1,1)' }],
+    { duration: 560, easing: 'ease-in-out' });
+}
 function route(keepScroll) {
   var h = location.hash.slice(1);
   var id = TABS.some(function (t) { return t.id === h; }) ? h : 'motion';
@@ -388,15 +561,28 @@ function route(keepScroll) {
     a.setAttribute('aria-selected', on ? 'true' : 'false');
     a.tabIndex = 0;
   });
+  tabInd(!firstRoute && !keepScroll);
   if (!firstRoute && !keepScroll) window.scrollTo(0, 0);
   firstRoute = false;
 }
 window.addEventListener('hashchange', function () { route(); });
+window.addEventListener('resize', function () { tabInd(false); });
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { tabInd(false); });
 render();
 route();
 
 var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 document.addEventListener('click', function (e) {
+  var th = e.target.closest('[data-theme-toggle]');
+  if (th) {
+    var nt = curTheme() === 'dark' ? 'light' : 'dark';
+    swapTheme(function () {
+      document.documentElement.setAttribute('data-theme', nt);
+      try { localStorage.setItem('theme', nt); } catch (err) {}
+      themeBtnUpdate(th);
+    });
+    return;
+  }
   var mb = e.target.closest('[data-more]');
   if (mb) {
     var key = mb.getAttribute('data-more'), wrap = mb.closest('.gwrap');
@@ -456,3 +642,31 @@ document.addEventListener('click', function (e) {
     } catch (err) { fallback(); }
   }
 });
+
+/* faixas (ferramentas e clientes): continuam rolando, mas bem mais devagar com o mouse por cima.
+   Para mudar a lentidão, troque o 0.25 (1 = velocidade normal, 0.1 = quase parado). */
+(function () {
+  var SLOW = 0.25;
+  if (!window.matchMedia || !window.matchMedia('(hover: hover)').matches) return;
+  function setTarget(strip, t) {
+    strip._t = t;
+    if (strip._raf) return;
+    strip._raf = requestAnimationFrame(function step() {
+      var c = strip._r == null ? 1 : strip._r;
+      c += (strip._t - c) * 0.12;
+      if (Math.abs(strip._t - c) < 0.005) c = strip._t;
+      strip._r = c;
+      var tr = strip.querySelector('.strip-track');
+      if (tr) tr.getAnimations().forEach(function (a) { a.playbackRate = c; });
+      if (c === strip._t) { strip._raf = 0; return; }
+      strip._raf = requestAnimationFrame(step);
+    });
+  }
+  function hit(e) {
+    var s = e.target.closest && e.target.closest('.strip');
+    if (!s || (e.relatedTarget && s.contains(e.relatedTarget))) return null;
+    return s;
+  }
+  document.addEventListener('mouseover', function (e) { var s = hit(e); if (s) setTarget(s, SLOW); });
+  document.addEventListener('mouseout', function (e) { var s = hit(e); if (s) setTarget(s, 1); });
+})();
